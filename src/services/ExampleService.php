@@ -10,10 +10,11 @@ class ExampleService
     protected CityService $cityService;
 
     public function __construct(
-        CityService $cityService
+        CityService $cityService,
     ) {
         $this->cityService = $cityService;
     }
+
 
     /**
      * return a random seller

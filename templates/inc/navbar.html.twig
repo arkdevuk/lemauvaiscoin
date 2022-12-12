@@ -1,0 +1,19 @@
+{% if app.user is not null %}
+    <nav class="navbar navbar-dark bg-secondary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="https://getbootstrap.com/docs/5.0/assets/brand/bootstrap-logo.svg"
+                     alt="" width="30" height="24">
+            </a>
+            <div class="right-side">
+                <ul class="list-unstyled m-0 p-0 d-flex">
+                    <li class="pr-2"><a class="text-white" href="/profile">{{ app.user.username }}</a></li>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li class="pr-2"><a class="text-white" href="/admin">administration</a></li>
+                    {% endif %}
+                    <li class="pr-2"><a class="text-danger" href="{{ path('app.logout') }}">logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+{% endif %}

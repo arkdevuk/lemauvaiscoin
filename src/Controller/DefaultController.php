@@ -13,28 +13,28 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 class DefaultController extends AbstractController
 {
-    #[Route('/', name: 'app.home')]
+    #[Route('/', name: 'app.dash')]
     public function index(): Response
     {
-
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
         ]);
     }
 
-    #[Route('/add/annonce', name: 'app.home')]
+    #[Route('/annonce/add', name: 'app.home')]
     public function addAnnonce(
         EntityManagerInterface $em,
         Request $request,
-    ): Response {
-        $user = $em->getRepository(User::class)
-            ->findOneBy(['id' => 1]);
+    ): Response
+    {
+        $user = $this->getUser();
         if (!$user instanceof User) {
-            throw new AccessDeniedHttpException();
+            throw new AccessDeniedHttpException('You need to be logged');
         }
 
         $annonce = new Annonce(
