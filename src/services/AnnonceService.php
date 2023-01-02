@@ -69,10 +69,10 @@ class AnnonceService
         $totalPages = (int)ceil($total / $limit);
 
         if ($total === 0) {
-            throw new \RuntimeException('No results !');
+            throw new \RuntimeException('No results !', 0);
         } else {
             if ($page > $totalPages) {
-                throw new \RuntimeException('This page does not exist !');
+                throw new \RuntimeException('This page does not exist !', 10);
             }
         }
 

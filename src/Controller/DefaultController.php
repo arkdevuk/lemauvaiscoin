@@ -20,11 +20,13 @@ use Symfony\Component\Routing\Annotation\Route;
 class DefaultController extends AbstractController
 {
     #[Route('/', name: 'app.dash')]
+    #[Route('/page/{page}', name: 'app.dash.page')]
     public function index(
         Request $request,
         AnnonceService $annonceService,
+        int $page = 1,
     ): Response {
-        $page = (int)$request->get('page', 1);
+        //$page = (int)$request->get('page', 1);
 
         $limit = (int)$request->get('limit', 2);
 
@@ -48,6 +50,10 @@ class DefaultController extends AbstractController
                 'price' => 'ASC',
             ], $page, $limit);
         } catch (\Throwable $e) {
+            if ($e->getCode() === 10) {
+                // page does not exists
+                throw $this->createNotFoundException('La page n\'existe pas !');
+            }
             $annonces = [
                 'results' => [],
                 'count' => 0,
@@ -60,6 +66,8 @@ class DefaultController extends AbstractController
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
             'annonceQuery' => $annonces,
+            'queryParams' => http_build_query($_GET),
+            'actualPage' => $page,
         ]);
     }
 
