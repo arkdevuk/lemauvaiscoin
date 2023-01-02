@@ -20,7 +20,39 @@
     <div class="example-wrapper">
         <h1>Hello {{ controller_name }}! ✅</h1>
 
-        This friendly message is coming from:
+        <div class="w-100 small">
+            il y a <b>{{ annonceQuery.count }} annonces</b> dans vos critères
+        </div>
+
+        <div class="row">
+            {% for annonce in annonceQuery.results %}
+                <div class="col-12 mb-2">
+                    <a href="{{ path('ads.display.simple', {'id': annonce.id}) }}" class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-item-center justify-content-between">
+                                <div class="left">
+                                    {{ annonce.title }}
+                                </div>
+                                <div class="right">
+                                    {{ annonce.price }}€
+                                </div>
+                            </div>
+                            <div class="w-100 small text-muted">
+                                {{ annonce.description|raw }}
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if annonceQuery.totalPages > 1 %}
+            <div class="w-100">
+                {% for i in range(1, annonceQuery.totalPages) %}
+                    <a href="#">{{ i }}</a>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
 
     {% include 'inc/footer.html.twig' %}

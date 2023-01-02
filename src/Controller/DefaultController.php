@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Annonce;
 use App\Entity\User;
+use App\services\AnnonceService;
 use App\services\ExampleService;
 use App\Type\AnnonceType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,10 +20,46 @@ use Symfony\Component\Routing\Annotation\Route;
 class DefaultController extends AbstractController
 {
     #[Route('/', name: 'app.dash')]
-    public function index(): Response
-    {
+    public function index(
+        Request $request,
+        AnnonceService $annonceService,
+    ): Response {
+        $page = (int)$request->get('page', 1);
+
+        $limit = (int)$request->get('limit', 2);
+
+        $filters = [];
+
+        if ($request->get('query') !== null) {
+            $filters['query'] = $request->get('query');
+        }
+
+        if ($request->get('price_sup') !== null) {
+            $filters['price_sup'] = (int)$request->get('price_sup');
+        }
+
+        if ($request->get('price_inf') !== null) {
+            $filters['price_inf'] = (int)$request->get('price_inf');
+        }
+
+
+        try {
+            $annonces = $annonceService->getAnnonces($filters, [
+                'price' => 'ASC',
+            ], $page, $limit);
+        } catch (\Throwable $e) {
+            $annonces = [
+                'results' => [],
+                'count' => 0,
+                'totalPages' => 1,
+                'error' => $e->getMessage(),
+            ];
+        }
+
+
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
+            'annonceQuery' => $annonces,
         ]);
     }
 
