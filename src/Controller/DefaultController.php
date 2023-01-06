@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Annonce;
 use App\Entity\User;
 use App\services\AnnonceService;
+use App\services\CategoryService;
 use App\services\ExampleService;
 use App\Type\AnnonceType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,16 +25,22 @@ class DefaultController extends AbstractController
     public function index(
         Request $request,
         AnnonceService $annonceService,
+        CategoryService $categoryService,
         int $page = 1,
     ): Response {
         //$page = (int)$request->get('page', 1);
 
-        $limit = (int)$request->get('limit', 2);
+        $limit = (int)$request->get('limit', 5);
 
         $filters = [];
 
         if ($request->get('query') !== null) {
             $filters['query'] = $request->get('query');
+        }
+
+        if ($request->get('categories') !== null && is_array($request->get('categories'))) {
+
+            $filters['in_categories'] = $request->get('categories');
         }
 
         if ($request->get('price_sup') !== null) {
@@ -44,11 +51,17 @@ class DefaultController extends AbstractController
             $filters['price_inf'] = (int)$request->get('price_inf');
         }
 
+        $order = [];
+        $allowedOrder = ['price', 'postedDate', 'title'];
+        if ($request->get('order') !== null && str_contains($request->get('order'), ',')) {
+            $o_ = explode(',', $request->get('order'));
+            if (in_array($o_[0], $allowedOrder, true)) {
+                $order[$o_[0]] = strtoupper($o_[1]);
+            }
+        }
 
         try {
-            $annonces = $annonceService->getAnnonces($filters, [
-                'price' => 'ASC',
-            ], $page, $limit);
+            $annonces = $annonceService->getAnnonces($filters, $order, $page, $limit);
         } catch (\Throwable $e) {
             if ($e->getCode() === 10) {
                 // page does not exists
@@ -68,6 +81,7 @@ class DefaultController extends AbstractController
             'annonceQuery' => $annonces,
             'queryParams' => http_build_query($_GET),
             'actualPage' => $page,
+            'categories' => $categoryService->getAllCategories(),
         ]);
     }
 

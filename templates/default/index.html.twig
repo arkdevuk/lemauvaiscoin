@@ -20,6 +20,174 @@
     <div class="example-wrapper">
         <h1>Hello {{ controller_name }}! ✅</h1>
 
+        <div class="w-100">
+            <form id="filters">
+                <div class="form-row w-100 mb-2">
+                    <label for="categories" class="form-label">Catégories</label>
+                    <select name="categories"
+                            multiple class="form-select unselect-on-null" id="categories">
+                        <option value="null" {% if app.request.get('categories', null) == null %} selected {% endif %}>
+                            Tous le site
+                        </option>
+                        {% for cat_ in categories %}
+                            <option value="{{ cat_.id }}"
+                                    {% if cat_.id in app.request.get('categories', []) %} selected {% endif %}
+                            >{{ cat_.name|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <label for="price_sup" class="form-label">Prix mini</label>
+                        <input type="number" class="form-control"
+                               name="price_sup" value="{{ app.request.get('price_sup', '') }}"
+                               id="price_sup" placeholder="99">
+                    </div>
+
+                    <div class="col-12 col-md-6 mb-3">
+                        <label for="price_inf" class="form-label">Prix max</label>
+                        <input type="number" class="form-control"
+                               name="price_inf" value="{{ app.request.get('price_inf', '') }}"
+                               id="price_inf" placeholder="99">
+                    </div>
+                </div>
+
+
+                <div class="mb-3">
+                    <label for="query" class="form-label">Recherche</label>
+                    <input type="text" class="form-control"
+                           name="query" value="{{ app.request.get('query', '') }}"
+                           id="query" placeholder="meuble occasion...">
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-2">
+                        <label for="order" class="form-label">Trier par</label>
+                        <select name="order"
+                                class="form-select" id="order">
+                            <option value="">Par id</option>
+                            <option {% if app.request.get('order', '') == 'price,asc' %} selected {% endif %}
+                                    value="price,asc">Du moins cher au plus cher
+                            </option>
+                            <option {% if app.request.get('order', '') == 'price,desc' %} selected {% endif %}
+                                    value="price,desc">Du plus cher au moins cher
+                            </option>
+                            <option value="postedDate,asc">Par date asc</option>
+                            <option value="postedDate,desc">Par date desc</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-6 mb-2">
+                        <label for="limit" class="form-label">Nombre annonces par pages</label>
+                        <select name="limit"
+                                class="form-select" id="limit">
+                            {% for i in range(1,25) %}
+                                <option value="{{ i }}"
+                                        {% if i == app.request.get('limit', 5) %} selected {% endif %}
+                                >{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="form-row w-100 d-flex justify-content-center align-items-center mt-4">
+                    <input type="button" class="btn btn-secondary me-2"
+                           id="removeFilters"
+                           value="Remove Filters">
+                    <input type="submit" class="btn btn-primary"
+                           value="Filtrer 🔖">
+                </div>
+            </form>
+        </div>
+
+        <script>
+            let selects_ = document.querySelectorAll('select.unselect-on-null');
+            selects_.forEach(su_ => {
+                su_.addEventListener('change', e => {
+                    const selected = su_.querySelectorAll('option:checked');
+                    const values = Array.from(selected).map(el => el.value);
+                    if (values.includes('null')) {
+                        su_.querySelectorAll('option').forEach(option => {
+                            if (option.value !== 'null') {
+                                option.removeAttribute('checked')
+                            } else {
+                                option.setAttribute('checked', 'true');
+                            }
+                        });
+                    }
+                })
+            })
+
+            let removeFilters = document.querySelector('#removeFilters');
+            removeFilters.addEventListener('click', e => {
+                // redirect to new url
+                let baseUrl = '{{ path('app.dash') }}';
+                // get current host
+                let host = window.location.host;
+                window.location.href = 'https://' + host + baseUrl;
+            });
+
+
+            let form = document.querySelector('#filters');
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+                let payload = {};
+                form.querySelectorAll('select').forEach(_select => {
+                    const name = _select.getAttribute('name');
+                    let isMultiple = _select.getAttribute('multiple');
+                    if (isMultiple !== null) {
+                        const selected = _select.querySelectorAll('option:checked');
+                        const values = Array.from(selected).map(el => el.value);
+                        if (Array.isArray(values) && values.length > 0 && !values.includes('null')) {
+                            payload[name] = values;
+                        }
+                    } else {
+                        payload[name] = _select.value;
+                    }
+
+                });
+
+
+                form.querySelectorAll('input').forEach(_input => {
+                    if (_input.getAttribute('type') === 'submit' || _input.getAttribute('type') === 'button') {
+                        return;
+                    }
+
+                    const name = _input.getAttribute('name');
+                    const value = _input.value;
+                    if (value !== undefined && value !== '') {
+                        payload[name] = value;
+                    }
+                })
+
+                // payload => http query param
+                let queryParams = Object.keys(payload).map(key => {
+                    let v = payload[key];
+                    if (Array.isArray(v)) {
+                        let retArray = [];
+                        for (let i = 0; i < v.length; i++) {
+                            let subValue = v[i];
+                            retArray.push(key + '[]=' + subValue);
+                        }
+                        return retArray.join('&');
+                    } else {
+                        return key + '=' + payload[key];
+                    }
+                }).join('&');
+
+                // redirect to new url
+                let baseUrl = '{{ path('app.dash') }}';
+                // get current host
+                let host = window.location.host;
+                window.location.href = 'https://' + host + baseUrl + '?' + queryParams;
+            })
+        </script>
+
+
+        <hr>
+
         <div class="w-100 small">
             il y a <b>{{ annonceQuery.count }} annonces</b> dans vos critères
         </div>
@@ -31,7 +199,7 @@
                 </div>
             {% else %}
                 {% for annonce in annonceQuery.results %}
-                    <div class="col-12 mb-2">
+                    <div class="col-12 col-md-6 col-lg-4 mb-2">
                         <a href="{{ path('ads.display.simple', {'id': annonce.id}) }}" class="card">
                             <div class="card-body">
                                 <div class="d-flex align-item-center justify-content-between">
@@ -44,6 +212,9 @@
                                 </div>
                                 <div class="w-100 small text-muted">
                                     {{ annonce.description|raw }}
+                                </div>
+                                <div class="small text-muted">
+                                    {{ annonce.postedDate|date("Y-m-d H:i") }}
                                 </div>
                             </div>
                         </a>
