@@ -18,7 +18,7 @@
     </style>
 
     <div class="example-wrapper">
-        <h1>Hello {{ controller_name }}! ✅</h1>
+        <h1>Le Mauvais Coin 🐒</h1>
 
         <div class="w-100">
             <form id="filters">
@@ -59,6 +59,17 @@
                     <input type="text" class="form-control"
                            name="query" value="{{ app.request.get('query', '') }}"
                            id="query" placeholder="meuble occasion...">
+                </div>
+
+                <div class="w-100">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"
+                               name="has_image" {% if app.request.get('has_image', '') == 'true' %} checked {% endif %}
+                               value="true" id="has_image">
+                        <label class="form-check-label" for="has_image">
+                            Annonce avec images
+                        </label>
+                    </div>
                 </div>
 
                 <div class="row">
@@ -154,9 +165,18 @@
                     if (_input.getAttribute('type') === 'submit' || _input.getAttribute('type') === 'button') {
                         return;
                     }
-
                     const name = _input.getAttribute('name');
                     const value = _input.value;
+
+                    // we only send value for checked form control
+                    if (_input.getAttribute('type') === 'checkbox' || _input.getAttribute('type') === 'radio') {
+                        // check if input is checked
+                        if (_input.checked) {
+                            payload[name] = value;
+                        }
+                        return;
+                    }
+
                     if (value !== undefined && value !== '') {
                         payload[name] = value;
                     }
