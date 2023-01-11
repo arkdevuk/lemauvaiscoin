@@ -12,22 +12,30 @@
                 {{ annonce.description|raw }}
             </div>
             <div class="col-6">
-                <div class="w-100 mb-4">
-                    posté le <b>{{ annonce.postedDate|date('d/M/Y') }}</b>
-                </div>
-                <div class="h4">Vendeur</div>
-                <div class="subtitle">
-                    {{ annonce.owner.username }}
-                </div>
-                <div class="contact">
-                    <div class="email">
-                        <a href="mailto:{{ annonce.owner.email }}?subject=Re%20:%20{{ annonce.title|url_encode }}">{{ annonce.owner.email }}</a>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="w-100 mb-4">
+                            posté le <b>{{ annonce.postedDate|date('d/M/Y') }}</b>
+                        </div>
+                        <div class="h4">Vendeur</div>
+                        <div class="subtitle">
+                            {{ annonce.owner.username }}
+                        </div>
+                        <div class="contact">
+                            <div class="email">
+                                <a href="mailto:{{ annonce.owner.email }}?subject=Re%20:%20{{ annonce.title|url_encode }}">{{ annonce.owner.email }}</a>
+                            </div>
+                            <div class="phone">
+                                <a href="tel:{{ seller.tel }}">{{ seller.tel }}</a>
+                            </div>
+                            <div class="address">
+                                {{ seller.cp }} {{ seller.city }}
+                            </div>
+                        </div>
                     </div>
-                    <div class="phone">
-                        <a href="tel:{{ seller.tel }}">{{ seller.tel }}</a>
-                    </div>
-                    <div class="address">
-                        {{ seller.cp }} {{ seller.city }}
+                    <div class="card-footer d-flex justify-content-center align-items-center">
+                        <a href="#" class="btn btn-primary w-100 me-2">Envoyer un message</a>
+                        <a href="#" class="btn btn-outline-primary w-100">Voir le profil du vendeur</a>
                     </div>
                 </div>
             </div>
