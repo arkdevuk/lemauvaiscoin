@@ -17,15 +17,13 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
-class DefaultController extends AbstractController
+class ProfileController extends AbstractController
 {
-    #[Route('/cgu', name: 'page.cgu')]
+    #[Route('/profile/my-profile', name: 'profile.my')]
     public function cgu(): Response
     {
 
 
-        return $this->render('pages/cgu.html.twig', [
-            'controller_name' => 'DefaultController',
-        ]);
+        return $this->render('profile/profile.my.twig', []);
     }
 }

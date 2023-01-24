@@ -1,0 +1,10 @@
+@import "./inc/variables";
+
+@import '~bootstrap/scss/bootstrap';
+
+@import "./inc/form";
+
+body {
+  background-color: rgba(#CCC, .3);
+  color: #222;
+}

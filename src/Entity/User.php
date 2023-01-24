@@ -2,6 +2,14 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -10,29 +18,41 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ApiResource(operations: [
+    new Get(),
+    new Put(security: 'is_granted(\'ROLE_ADMIN\') or object == user'),
+    new GetCollection(security: 'is_granted(\'ROLE_ADMIN\')'),
+    new Post(security: 'is_granted(\'ROLE_ADMIN\')'),
+])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[ApiProperty(readable: true, writable: false)]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
+    #[ApiProperty(readable: false, writable: false)]
     private ?string $salt;
 
     #[ORM\Column(length: 255)]
+    #[ApiProperty(readable: false, writable: false)]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[ApiProperty(security: 'is_granted(\'ROLE_ADMIN\') or object == user')]
     private ?string $email = null;
 
     #[ORM\Column]
+    #[ApiProperty(security: 'is_granted(\'ROLE_ADMIN\') or object == user')]
     private array $roles;
 
     #[ORM\OneToMany(mappedBy: 'owner', targetEntity: Annonce::class)]
+    #[ApiProperty(readable: false, writable: false)]
     private Collection $annonces;
 
     #[ORM\Column]
@@ -157,6 +177,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // TODO: Implement eraseCredentials() method.
     }
 
+    #[ApiProperty(security: 'is_granted(\'ROLE_ADMIN\') or object == user')]
     public function getUserIdentifier(): string
     {
         return $this->email;

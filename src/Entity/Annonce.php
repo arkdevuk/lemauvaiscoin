@@ -2,6 +2,15 @@
 
 namespace App\Entity;
 
+
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Put;
 use App\Repository\AnnonceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -9,6 +18,12 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AnnonceRepository::class)]
+#[ApiResource(operations: [
+    new GetCollection(),
+    new Get(),
+    new Put(security: 'is_granted(\'ROLE_ADMIN\') or object.owner == user'),
+])]
+// App\Entity\Annonce == Annonce::class
 class Annonce
 {
     #[ORM\Id]
@@ -20,15 +35,18 @@ class Annonce
     private ?\DateTimeInterface $postedDate;
 
     #[ORM\Column(length: 255)]
-    private ?string $title;
+    #[ApiFilter(SearchFilter::class, strategy: 'partial')]
+    private string $title;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[ApiFilter(SearchFilter::class, strategy: 'partial')]
     private ?string $description;
 
     #[ORM\Column]
     private ?bool $premium;
 
     #[ORM\Column]
+    #[ApiFilter(RangeFilter::class, properties: ['price'])]
     private ?float $price;
 
     #[ORM\ManyToOne(inversedBy: 'annonces')]
@@ -36,9 +54,11 @@ class Annonce
     private ?User $owner = null;
 
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: AnnonceAttribute::class)]
+    #[ApiProperty(readable: false, writable: false)]
     private Collection $attributes;
 
     #[ORM\ManyToOne]
+    #[ApiFilter(SearchFilter::class, strategy: 'exact')]
     private ?Category $category = null;
 
     public function __construct(
